@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+       #toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  z-index: 9999;
+}
+
+.toast {
+  display: inline-block;
+  color: white;
+  padding: 16px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.toast.green {
+  background-color: #4CAF50;
+}
+
+.toast.red {
+  background-color: #F44336;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+
+    <script>
+       function showToast(message, color) {
+  // create toast element
+  var toast = document.createElement('div');
+  toast.className = 'toast ' + color;
+  toast.textContent = message;
+
+  // add toast element to container
+  var container = document.getElementById('toast-container');
+  container.appendChild(toast);
+
+  // show toast
+  setTimeout(function() {
+    toast.classList.add('show');
+  }, 100);
+
+  // hide toast after 3 seconds
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() {
+      container.removeChild(toast);
+    }, 500);
+  }, 3000);
+}
+
+// example usage
+showToast('Success! Your changes have been saved.', 'green');
+showToast('Error! Something went wrong.', 'red');
+
+    </script>
+</body>
+</html>

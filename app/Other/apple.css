@@ -1,0 +1,20 @@
+/*
+white color : #F5F5F7
+Black color : #1D1D1F
+*/
+
+.myText {
+  font-size: 4vw; /* Default font size */
+}
+
+@media (max-width: 768px) {
+  .myText {
+    font-size: 3.5vw; /* Decreased font size for smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .myText {
+    font-size: 3vw; /* Further decreased font size for even smaller screens */
+  }
+}

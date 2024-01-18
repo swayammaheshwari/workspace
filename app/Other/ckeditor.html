@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>CKEditor 5 – CKBox sample</title>
+    <style>
+        /* CSS styles */
+    </style>
+</head>
+
+<body>
+    <h1>CKEditor 5 – CKBox sample</h1>
+
+    <div id="container">
+        <div id="editor"></div>
+        <button id="logButton" onclick="logEditorContent()" disabled>Log Editor Content</button>
+    </div>
+
+    <!-- Include the locally hosted CKEditor library -->
+    <script src="path/to/ckeditor/build/ckeditor.js"></script>
+
+    <script>
+        // CKEditor initialization
+        ClassicEditor
+            .create(document.getElementById("editor"))
+            .then(editor => {
+                // Enable the button once the editor is initialized
+                document.getElementById("logButton").disabled = false;
+            })
+            .catch(error => {
+                console.error("CKEditor initialization error:", error);
+            });
+
+        function logEditorContent() {
+            if (typeof ClassicEditor !== 'undefined') {
+                ClassicEditor
+                    .create(document.getElementById("editor"))
+                    .then(editor => {
+                        const editorData = editor.getData();
+                        console.log(editorData);
+                    })
+                    .catch(error => {
+                        console.error("Error accessing CKEditor instance:", error);
+                    });
+            } else {
+                console.log("CKEditor not loaded or initialized.");
+            }
+        }
+    </script>
+</body>
+
+</html>

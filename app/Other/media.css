@@ -1,0 +1,29 @@
+/* Mobile View */
+@media only screen and (max-width: 767px) {
+  .tab-view-only {
+    display: none !important;
+  }
+  .desktop-view-only {
+    display: none !important;
+  }
+}
+
+/* Tablet View */
+@media only screen and (min-width: 768px) and (max-width: 1023px) {
+  .mobile-view-only {
+    display: none !important;
+  }
+  .desktop-view-only {
+    display: none !important;
+  }
+}
+
+/* Desktop View */
+@media only screen and (min-width: 1024px) {
+  .mobile-view-only {
+    display: none !important;
+  }
+  .tab-view-only {
+    display: none !important;
+  }
+}

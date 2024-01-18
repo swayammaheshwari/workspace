@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .floating-instagram {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .instagram-logo {
+            width: 200px;
+            height: 200px;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+            }
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="/public/img/instagram2.0.png" alt="Instagram Logo" height="100px" class="instagram-logo">
+    <div class="floating-instagram">
+        <img src="/public/img/instagram2.0.png" alt="Instagram Logo" height="100px" class="instagram-logo">
+    </div>
+
+    <script>
+        const instagramLogo = document.querySelector('.instagram-logo');
+        instagramLogo.addEventListener('mouseover', () => {
+            instagramLogo.classList.add('blink');
+        });
+
+        instagramLogo.addEventListener('mouseout', () => {
+            instagramLogo.classList.remove('blink');
+        });
+
+    </script>
+</body>
+
+</html>

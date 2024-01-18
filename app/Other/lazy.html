@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Lazy loading image</title>
+	<style>
+		body {
+			background-color: pink;
+			height: 1500px; /* just for example */
+		}
+		img {
+			display: none;
+			margin: auto;
+			max-width: 100%;
+			max-height: 100%;
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+		}
+	</style>
+</head>
+<body>
+	<h1>Lazy loading image</h1>
+	<p>Scroll down to see the image.</p>
+	<img id="myImage" src="https://example.com/image.jpg" alt="Image" />
+
+	<script>
+		window.addEventListener('scroll', function() {
+			var image = document.getElementById('myImage');
+			var imagePosition = image.getBoundingClientRect().top;
+			var windowHeight = window.innerHeight;
+
+			if (imagePosition - windowHeight <= 0) {
+				image.style.display = 'block';
+				document.body.style.backgroundColor = '#fff';
+			}
+		});
+	</script>
+</body>
+</html>

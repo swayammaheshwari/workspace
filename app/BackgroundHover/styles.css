@@ -1,0 +1,12 @@
+.cursor {
+  position: relative;
+  background-color: blue;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+#front {
+  height: 100vh;
+  background-color: #f2c73a;
+}

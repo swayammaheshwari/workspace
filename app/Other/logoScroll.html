@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #f1f1f1;
+            height: 60px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+            transition: background-color 0.3s;
+        }
+
+        .logo {
+            height: 100px;
+            transition: height 0.3s;
+        }
+
+        .logo img {
+            max-height: 100%;
+        }
+
+        .navbar.shrink {
+            background-color: #ffffff;
+        }
+
+        .logo.shrink {
+            height: 40px;
+        }
+
+        #content {
+            padding-top: 60px;
+            /* Adjust this value to ensure content starts below the navbar */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar" id="navbar">
+        <div class="logo" id="logo">
+            <img src="/public/img/mountains.jpg" alt="">
+        </div>
+    </div>
+
+    <div id="content">
+        <!-- The rest of your website content goes here -->
+    </div>
+
+    <script>
+        window.onscroll = function () {
+            shrinkLogo();
+        };
+
+        function shrinkLogo() {
+            var navbar = document.getElementById("navbar");
+            var logo = document.getElementById("logo");
+            var scrollPos = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+            if (scrollPos > 80) {
+                navbar.classList.add("shrink");
+                logo.classList.add("shrink");
+            } else {
+                navbar.classList.remove("shrink");
+                logo.classList.remove("shrink");
+            }
+        }
+    </script>
+</body>
+
+</html>

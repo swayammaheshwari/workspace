@@ -1,0 +1,37 @@
+.myswiper {
+  position: relative;
+  padding-bottom: 40px;
+}
+
+.myswiper:hover {
+  cursor: none;
+}
+
+img {
+  width: 100%;
+}
+.card {
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+.card__image img {
+  border-radius: 24px;
+}
+
+.card__title {
+  text-align: center;
+  transition: opacity 0.3s;
+}
+
+.swiper-slide:not(.swiper-slide-active) .card__title {
+  opacity: 0;
+}
+
+.cursor img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 24px;
+  position: absolute;
+  z-index: 4;
+}

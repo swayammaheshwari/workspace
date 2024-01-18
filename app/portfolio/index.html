@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - swiper-slider</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+  <style>
+    .myswiper {
+      position: relative;
+      padding-bottom: 40px;
+    }
+
+    .myswiper:hover {
+      cursor: none;
+    }
+
+    img {
+      width: 100%;
+    }
+
+    .card {
+      padding: 0 8px;
+      overflow: hidden;
+    }
+
+    .card__image img {
+      border-radius: 24px;
+    }
+
+    .card__title {
+      text-align: center;
+      transition: opacity 0.3s;
+    }
+
+    .swiper-slide:not(.swiper-slide-active) .card__title {
+      opacity: 0;
+    }
+
+    .cursor img {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 24px;
+      position: absolute;
+      z-index: 4;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="cursor">
+    <img class="cursor-img" src="img/icon.png" alt="">
+  </div>
+  <div class="myswiper">
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="card">
+            <div class="card__image"><img src="https://picsum.photos/800/600?random=1" alt="">
+              <h2 class="card__title">Slide 1</h2>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="card">
+            <div class="card__image"><img src="https://picsum.photos/800/600?random=2" alt="">
+              <h2 class="card__title">Slide 2</h2>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="card">
+            <div class="card__image"><img src="https://picsum.photos/800/600?random=3" alt="">
+              <h2 class="card__title">Slide 3</h2>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="card">
+            <div class="card__image"><img src="https://picsum.photos/800/600?random=4" alt="">
+              <h2 class="card__title">Slide 4</h2>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="card">
+            <div class="card__image"><img src="https://picsum.photos/800/600?random=5" alt="">
+              <h2 class="card__title">Slide 5</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const swiper = new Swiper(".swiper", {
+      loop: true,
+      slidesPerView: 4,
+      centeredSlides: true,
+      autoplay: {
+        enabled: true,
+        delay: 5000,
+      },
+    });
+
+    let mouseCursor = document.querySelector(".cursor-img");
+    let isDragging = false;
+
+    window.addEventListener("mousemove", cursor);
+    window.addEventListener("mousedown", startDrag);
+    window.addEventListener("mouseup", stopDrag);
+
+    function cursor(e) {
+      if (!isDragging) {
+        mouseCursor.style.top = e.pageY + "px";
+        mouseCursor.style.left = e.pageX + "px";
+      }
+    }
+
+    function startDrag(e) {
+      isDragging = true;
+    }
+
+    function stopDrag(e) {
+      isDragging = false;
+    }
+
+  </script>
+
+</body>
+
+</html>

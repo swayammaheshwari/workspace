@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table>
+        <tr>
+         <td colspan="2">&nbsp;</td>
+         <td>&nbsp;</td>
+        </tr>
+        <tr>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+        </tr>
+        <tr>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+        </tr>
+        </table>
+
+        <hr>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <form action="" name="RegForm" onsubmit="GEEKFORGEEKS()">
+    <input type="text" name="Name" id="">
+    <button type="submit">dsv</button>
+    </form>
+    <script>
+        function GEEKFORGEEKS()
+        {
+         var name = document.forms["RegForm"]["Name"];
+         var email = document.forms["RegForm"]["EMail"];
+         var phone = document.forms["RegForm"]["Telephone"];
+         var what = document.forms["RegForm"]["Subject"];
+         var password = document.forms["RegForm"]["Password"];
+         var address = document.forms["RegForm"]["Address"];
+        
+         if (name.value == "")
+         {
+         window.alert("Please enter your name.");
+         name.focus();
+         return false;
+         }
+        
+         if (address.value == "")
+         {
+         window.alert("Please enter your address.");
+         name.focus();
+         return false;
+         }
+        
+         if (email.value == "")
+         {
+         window.alert("Please enter a valid e-mail address.");
+         email.focus();
+         return false;
+         }
+        
+         if (email.value.indexOf("@", 0) < 0)
+         {
+         window.alert("Please enter a valid e-mail address.");
+         email.focus();
+         return false;
+         }
+        
+         if (email.value.indexOf(".", 0) < 0)
+         {
+         window.alert("Please enter a valid e-mail address.");
+         email.focus();
+         return false;
+         }
+        
+         if (phone.value == "")
+         {
+         window.alert("Please enter your telephone number.");
+         phone.focus();
+         return false;
+         }
+        
+         if (password.value == "")
+         {
+      
+         window.alert("Please enter your password");
+         password.focus();
+         return false;
+         }
+        
+         if (what.selectedIndex < 1)
+         {
+         alert("Please enter your course.");
+         what.focus();
+         return false;
+         }
+        
+         return true;
+        }</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="back">
+        <div id="front">
+            <div class="cursor"></div>
+            <br>
+            <h1>dfgdfg</h1>
+        </div>
+    </div>
+
+    <script>
+        let front = document.getElementById("front");
+        let mouseCursor = document.querySelector(".cursor");
+
+        // Listen for mousemove event on the front div
+        front.addEventListener("mousemove", cursor);
+
+        function cursor(e) {
+            // Update cursor position based on the center of the cursor element
+            let y = e.pageY - mouseCursor.offsetHeight / 2;
+            let x = e.pageX - mouseCursor.offsetWidth / 2;
+
+            mouseCursor.style.top = y + "px";
+            mouseCursor.style.left = x + "px";
+        }
+
+        class Particle {
+            // ... (existing code) ...
+
+            draw() {
+                this.ctx.save();
+                this.ctx.translate(this.position.x, this.position.y);
+                this.ctx.rotate((Math.PI / 180) * this.rotation);
+
+                // Draw image instead of shapes
+                this.ctx.drawImage(
+                    this.imageData,
+                    -this.radius,
+                    -this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                );
+
+                this.ctx.restore();
+            }
+
+            // ... (existing code) ...
+        }
+
+        class Canvas {
+            // ... (existing code) ...
+
+            init() {
+                // ... (existing code) ...
+
+                loadImages([this.imageURL.default, this.imageURL.hovered], (images) => {
+                    this.imagesData.default = images[0];
+                    this.imagesData.hovered = images[1];
+                    initialize();
+                });
+
+                // ... (existing code) ...
+            }
+
+            updateParticleColor(imageData, particle) {
+                const color = this.returnPixelColor(
+                    imageData,
+                    this.dimensions.width,
+                    {
+                        x: Math.floor(particle.position.x),
+                        y: Math.floor(particle.position.y)
+                    }
+                );
+                particle.updateColor(color);
+            }
+
+            returnPixelColor(imageData, width, position) {
+                const index = (position.x + position.y * width) * 4;
+                let pixel = {
+                    r: imageData.data[index + 0],
+                    g: imageData.data[index + 1],
+                    b: imageData.data[index + 2]
+                };
+                return `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})`;
+            }
+
+            // ... (existing code) ...
+        }
+
+        // ... (existing code) ...
+
+        const app = new App();
+        app.init();
+    </script>
+</body>
+
+</html>

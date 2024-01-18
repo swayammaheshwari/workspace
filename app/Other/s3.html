@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Upload Image to S3</title>
+</head>
+
+<body>
+    <form>
+        <input type="file" name="image">
+        <input type="text" name="userId">
+        <input type="text" name="blogId">
+        <button type="submit">Upload Image</button>
+    </form>
+    <div id="response"></div>
+    <script>
+        const form = document.querySelector('form');
+        const responseDiv = document.querySelector('#response');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('http://localhost:8080/image', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+                const imageUrl = data.url;
+                responseDiv.innerHTML = `Image URL: ${imageUrl}`;
+                console.log('Server response:', data);
+            } catch (error) {
+                console.error(error);
+                responseDiv.innerHTML = 'Failed to upload image';
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>
