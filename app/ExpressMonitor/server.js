@@ -1,28 +1,32 @@
-require("dotenv").config();
-const express = require("express");
-const ejs = require("ejs");
-const mongoose = require("mongoose");
+import express from "express";
 
 const app = express();
-app.set("view engine", "ejs");
+// app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.set("strictQuery", true);
-mongoose.connect(process.env.MONGOLAB_URI);
-
 app.get("/", (req, res) => {
-  console.log("get called");
+  console.log("/ get called");
   res.send("Hello World");
+});
+
+app.get("/lazy", (req, res) => {
+  let j = 0;
+
+  for (let i = 0; i < 200004000; i++) {
+    j++;
+  }
+
+  res.send(`send data ${j}`);
 });
 
 app.post("/", (req, res) => {
   const name = req.body.name;
   console.log("post called");
-  return res.status(400).send(`Name is ${name}`);
+  return res.status(201).send(`Name is ${name}`);
 });
 
-app.listen(process.env.PORT, function () {
-  console.log(`Server started on http://localhost:${process.env.PORT}`);
+app.listen(5000, function () {
+  console.log(`Server started on http://localhost:${5000}`);
 });
