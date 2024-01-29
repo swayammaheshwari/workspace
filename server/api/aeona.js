@@ -1,6 +1,7 @@
-require("dotenv").config();
+import { config } from "dotenv";
+import axios from "axios"; // Import axios library
 
-const axios = require("axios");
+config();
 
 const options = {
   method: "GET",
@@ -17,7 +18,7 @@ const options = {
 
 async function fetchData() {
   try {
-    const response = await axios.request(options);
+    const response = await axios.request(options); // Use axios.request method
     console.log(response.data);
   } catch (error) {
     console.error(error);

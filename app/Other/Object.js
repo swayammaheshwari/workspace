@@ -1,5 +1,5 @@
 const func = {
-  main(): any {
+  main() {
     return this.main;
   },
 };
