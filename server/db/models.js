@@ -4,6 +4,12 @@ const itemSchema = new mongoose.Schema({
   name: String,
 });
 
-const ItemModel = mongoose.model("Item", itemSchema);
+const UserSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+});
 
-export default ItemModel;
+const ItemModel = mongoose.model("Item", itemSchema);
+const UserModel = mongoose.model("User", UserSchema);
+
+export { ItemModel, UserModel };
