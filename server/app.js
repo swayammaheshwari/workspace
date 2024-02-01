@@ -7,6 +7,7 @@ import connectToMongoDB from "./db/connect.js";
 import startRoutes from "./routes/start.js";
 import itemRoutes from "./routes/item.js";
 import userRoutes from "./routes/user.js";
+// import newUsersRoutes from "./routes/userRoutes.js";
 
 const app = express();
 app.set("view engine", ejs);
@@ -19,6 +20,7 @@ connectToMongoDB();
 app.use(startRoutes);
 app.use(itemRoutes);
 app.use(userRoutes);
+// app.use(newUsersRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server started on http://localhost:${process.env.PORT}`);

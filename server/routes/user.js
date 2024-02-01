@@ -5,7 +5,8 @@ const router = Router();
 
 router.get("/get-users", async (req, res) => {
   try {
-    res.status(201).send("server is live");
+    const users = await UserModel.find({});
+    return res.status(200).json(users);
   } catch (err) {
     console.error(err);
     res.status(500).send("Internal Server Error");

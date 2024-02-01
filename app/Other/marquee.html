@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @keyframes moveLeftToRight {
+            from {
+                transform: translateX(-100%);
+            }
+
+            to {
+                transform: translateX(500%);
+            }
+        }
+
+        .marquee {
+            white-space: nowrap;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .marquee span {
+            display: inline-block;
+            animation: moveLeftToRight 10s linear infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="marquee">
+        <span>LET'S CRAWL, WALK, AND SOAR TOGETHER.</span>
+    </div>
+    <!-- <marquee direction="right" height="300px">dfgdfgdfg</marquee> -->
+
+</body>
+
+</html>
