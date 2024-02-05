@@ -1,13 +1,13 @@
 import { config } from "dotenv";
-config();
+config(); // if npm start is used
+// config({ path: "../.env" }); // if pm2 is used
 import express from "express";
 import ejs from "ejs";
 import connectToMongoDB from "./db/connect.js";
 //routes
-import startRoutes from "./routes/start.js";
-import itemRoutes from "./routes/item.js";
-import userRoutes from "./routes/user.js";
-// import newUsersRoutes from "./routes/userRoutes.js";
+import startRoutes from "./routes/startRoutes.js";
+import itemRoutes from "./routes/itemRoutes.js";
+import UsersRoutes from "./routes/userRoutes.js";
 
 const app = express();
 app.set("view engine", ejs);
@@ -19,8 +19,7 @@ connectToMongoDB();
 
 app.use(startRoutes);
 app.use(itemRoutes);
-app.use(userRoutes);
-// app.use(newUsersRoutes);
+app.use(UsersRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server started on http://localhost:${process.env.PORT}`);

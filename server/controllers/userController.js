@@ -1,20 +1,12 @@
-// controllers/UserController.js
+import { UserModel } from "../models/User.js";
 
-// Import any necessary modules or dependencies
-import {
-  getUserById as _getUserById,
-  createUser as _createUser,
-  updateUser as _updateUser,
-  deleteUser as _deleteUser,
-} from "../services/userService.js";
-
-// Controller functions
 const UserController = {
   // GET /users/:id
   getUserById: async (req, res) => {
     try {
       const userId = req.params.id;
-      const user = await _getUserById(userId);
+      const user = await UserModel.findById(userId);
+
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -29,7 +21,15 @@ const UserController = {
   createUser: async (req, res) => {
     try {
       const userData = req.body;
-      const newUser = await _createUser(userData);
+
+      const newUser = new UserModel({
+        name: userData.name,
+        email: userData.email,
+      });
+
+      // Save the new user to the database
+      await newUser.save();
+
       return res.status(201).json(newUser);
     } catch (error) {
       console.error("Error creating user:", error);
@@ -42,7 +42,11 @@ const UserController = {
     try {
       const userId = req.params.id;
       const userData = req.body;
-      const updatedUser = await _updateUser(userId, userData);
+
+      const updatedUser = await UserModel.findByIdAndUpdate(userId, userData, {
+        new: true,
+      });
+ 
       if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -57,7 +61,7 @@ const UserController = {
   deleteUser: async (req, res) => {
     try {
       const userId = req.params.id;
-      const deletedUser = await _deleteUser(userId);
+      const deletedUser = await UserModel.findByIdAndDelete(userId);
       if (!deletedUser) {
         return res.status(404).json({ error: "User not found" });
       }

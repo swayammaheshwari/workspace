@@ -1,4 +1,4 @@
-import { set, connect } from "mongoose";
+import { connect } from "mongoose";
 
 const connectToMongoDB = async () => {
   try {
