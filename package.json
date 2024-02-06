@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon server/app.js",
+    "dev": "nodemon server/app.js",
     "host": "ngrok http --domain=23fe3eaf0ebb-6157655808131542538.ngrok-free.app 5000",
     "test": "jest --coverage"
   },

@@ -1,29 +1,13 @@
 import { Router } from "express";
-import { ItemModel } from "../models/Item.js";
-
 const router = Router();
+import ItemController from "../controllers/itemController.js";
 
-router.get("/items", async (req, res) => {
-  try {
-    const items = await ItemModel.find().sort({ createdAt: -1 }).exec();
-    res.send({ items });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
-  }
-});
+router.get("/items/:id", ItemController.getItemById);
 
-router.get("/additems", async (req, res) => {
-  try {
-    const item1 = new ItemModel({
-      name: "hey swayam here",
-    });
-    await item1.save();
-    res.status(201).send("Item added successfully");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
-  }
-});
+router.post("/items/", ItemController.createItem);
+
+router.put("/items/:id", ItemController.updateItem);
+
+router.delete("/items/:id", ItemController.deleteItem);
 
 export default router;
