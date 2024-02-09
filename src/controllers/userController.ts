@@ -1,8 +1,9 @@
-import { UserModel } from "../models/User.js";
+import { UserModel } from "../models/userModel";
+import { Request, Response } from "express";
 
 const UserController = {
   // GET /users/:id
-  getUserById: async (req, res) => {
+  getUserById: async (req:Request, res:Response) => {
     try {
       const userId = req.params.id;
       const user = await UserModel.findById(userId);
@@ -18,7 +19,7 @@ const UserController = {
   },
 
   // POST /users
-  createUser: async (req, res) => {
+  createUser: async (req:Request, res:Response) => {
     try {
       const userData = req.body;
 
@@ -38,7 +39,7 @@ const UserController = {
   },
 
   // PUT /users/:id
-  updateUser: async (req, res) => {
+  updateUser: async (req:Request, res:Response) => {
     try {
       const userId = req.params.id;
       const userData = req.body;
@@ -58,7 +59,7 @@ const UserController = {
   },
 
   // DELETE /users/:id
-  deleteUser: async (req, res) => {
+  deleteUser: async (req:Request, res:Response) => {
     try {
       const userId = req.params.id;
       const deletedUser = await UserModel.findByIdAndDelete(userId);

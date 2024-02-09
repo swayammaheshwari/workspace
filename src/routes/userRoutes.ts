@@ -1,6 +1,7 @@
 import { Router } from "express";
+import UserController from "../controllers/userController"; // Import UserController without the .js extension
+
 const router = Router();
-import UserController from "../controllers/userController.js";
 
 router.get("/users/:id", UserController.getUserById);
 

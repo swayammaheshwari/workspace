@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     res.status(201).send("server is live");
   } catch (err) {
@@ -11,9 +11,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req: Request, res: Response) => {
   try {
-    let message = "LIST got\n";
+    let message: string = "LIST got\n";
     for (const key in req.body) {
       message += `${key}: ${req.body[key]}\n`;
     }

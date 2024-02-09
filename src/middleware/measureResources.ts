@@ -1,4 +1,6 @@
-const measureResources = (req, res, next) => {
+import { Request, Response, NextFunction } from "express";
+
+const measureResources = (req: Request, res: Response, next: NextFunction): void => {
   const startUsageCPU = process.cpuUsage();
   const startUsageMemory = process.memoryUsage().rss;
 

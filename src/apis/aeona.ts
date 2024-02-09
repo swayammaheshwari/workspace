@@ -1,9 +1,16 @@
 import { config } from "dotenv";
-import axios from "axios"; // Import axios library
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 config();
 
-const options = {
+interface Options extends AxiosRequestConfig {
+  params: {
+    text: string;
+    userId: string;
+  };
+}
+
+const options: Options = {
   method: "GET",
   url: "https://aeona3.p.rapidapi.com/",
   params: {
@@ -11,14 +18,14 @@ const options = {
     userId: "12312312312",
   },
   headers: {
-    "X-RapidAPI-Key": process.env.AEONA_API_KEY,
+    "X-RapidAPI-Key": process.env.AEONA_API_KEY!,
     "X-RapidAPI-Host": "aeona3.p.rapidapi.com",
   },
 };
 
-async function fetchData() {
+async function fetchData(): Promise<void> {
   try {
-    const response = await axios.request(options); // Use axios.request method
+    const response: AxiosResponse = await axios.request(options);
     console.log(response.data);
   } catch (error) {
     console.error(error);
