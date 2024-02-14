@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import measureResources from "../middleware/measureResources";
 
 const startController = {
   getStart: async (req: Request, res: Response) => {
@@ -22,6 +23,14 @@ const startController = {
       res.status(500).send("Internal Server Error");
     }
   },
+  measureStart: [measureResources, async (req: Request, res: Response) => {
+    try {
+      res.status(201).send(`memory state`);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Internal Server Error");
+    }
+  }]
 };
 
 export default startController;
