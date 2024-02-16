@@ -28,7 +28,7 @@ app.use(pgRoutes);
 
 const start = async () => {
   try {
-    // await connectToRedis();
+    await connectToRedis();
     await connectToMongoDB();
     await connectToPostgreSQL();
 

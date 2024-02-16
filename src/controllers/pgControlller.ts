@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import pool from "../config/pgPool";
+import pool from "../config/pgConnect";
 
 const UserController = {
   // GET /users/:id

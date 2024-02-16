@@ -1,9 +1,6 @@
-import { Pool } from "pg";
-import pool from "../config/pgPool";
-
+import pool from "../config/pgConnect";
 
 const connectToPostgreSQL = async (): Promise<void> => {
-
   try {
     await pool.connect();
     console.log("Connected to PostgreSQL");
