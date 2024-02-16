@@ -3,6 +3,20 @@ import client from "../config/redisConnect";
 
 const router = Router();
 
+router.get("/redis", async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || typeof name !== "string") throw new Error("Invalid input");
+
+    const data = await client.get(name);
+    res.send(`data: ${data}`);
+  } catch (error) {
+    res
+      .status(500)
+      .send(`Error occurred while saving data to redis : ${error}`);
+  }
+});
+
 router.post("/redis", async (req, res) => {
   try {
     const { name, email } = req.body;
