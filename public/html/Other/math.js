@@ -17,4 +17,5 @@ console.log(
     Math.max(0, 150, 30, 20, -8, -200)
 )
 
+// random number from 0 to 9
 console.log(Math.floor(Math.random()*10)) 
