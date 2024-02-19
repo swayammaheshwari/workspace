@@ -23,14 +23,18 @@ const startController = {
       res.status(500).send("Internal Server Error");
     }
   },
-  measureStart: [measureResources, async (req: Request, res: Response) => {
+  measureStart: async (req: Request, res: Response) => {
     try {
       res.status(201).send(`memory state`);
     } catch (err) {
       console.error(err);
       res.status(500).send("Internal Server Error");
     }
-  }]
+  },
+
+  protectedStart: async (req: Request, res: Response, next: Function) => {
+    res.status(201).json({ message: "This is a protected route." });
+  },
 };
 
 export default startController;

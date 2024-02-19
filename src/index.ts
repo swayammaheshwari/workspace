@@ -12,7 +12,6 @@ import UsersRoutes from "./routes/userRoutes";
 import redisRoutes from "./routes/redis";
 import pgRoutes from "./routes/pgRoutes";
 
-
 dotenv.config();
 const app: Express = express();
 app.set("view engine", ejs);
@@ -28,7 +27,7 @@ app.use(pgRoutes);
 
 const start = async () => {
   try {
-    await connectToRedis();
+    // await connectToRedis();
     await connectToMongoDB();
     await connectToPostgreSQL();
 
