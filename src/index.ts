@@ -11,6 +11,7 @@ import startRoutes from "./routes/startRoutes";
 import UsersRoutes from "./routes/userRoutes";
 import redisRoutes from "./routes/redis";
 import pgRoutes from "./routes/pgRoutes";
+import testRoute from "./routes/test.route" //test route
 
 dotenv.config();
 const app: Express = express();
@@ -24,6 +25,8 @@ app.use(startRoutes);
 app.use(UsersRoutes);
 app.use(redisRoutes);
 app.use(pgRoutes);
+//test routes
+app.use(testRoute);
 
 const start = async () => {
   try {
