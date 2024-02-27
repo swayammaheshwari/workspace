@@ -6,12 +6,13 @@ import cors from "cors";
 import connectToMongoDB from "./db/mongoConnect";
 import connectToRedis from "./db/redisConnect";
 import connectToPostgreSQL from "./db/postgressConnect";
+import debugMiddleware from "./middleware/debug";
 //routes
 import startRoutes from "./routes/startRoutes";
 import UsersRoutes from "./routes/userRoutes";
 import redisRoutes from "./routes/redis";
 import pgRoutes from "./routes/pgRoutes";
-import uploadRoutes from "./routes/uploadRoute"
+import uploadRoutes from "./routes/uploadRoute";
 import testRoute from "./routes/test.route"; //test route
 
 dotenv.config();
@@ -21,6 +22,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+
+if (process.env.NODE_ENV !== "production") {
+  app.use(debugMiddleware);
+}
 
 app.use(startRoutes);
 app.use(UsersRoutes);

@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 
 const UserController = {
   // GET /users/:id
-  getUserById: async (req:Request, res:Response) => {
+  getUserById: async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;
       const user = await UserModel.findById(userId);
@@ -19,9 +19,15 @@ const UserController = {
   },
 
   // POST /users
-  createUser: async (req:Request, res:Response) => {
+  createUser: async (req: Request, res: Response) => {
     try {
       const userData = req.body;
+      const userExist = await UserModel.findOne({ email: req.body.email });
+      if (userExist) {
+        return res
+          .status(409)
+          .json({ msg: "El correo electronico ya se encuentra registrado" });
+      }
 
       const newUser = new UserModel({
         name: userData.name,
@@ -39,7 +45,7 @@ const UserController = {
   },
 
   // PUT /users/:id
-  updateUser: async (req:Request, res:Response) => {
+  updateUser: async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;
       const userData = req.body;
@@ -47,7 +53,7 @@ const UserController = {
       const updatedUser = await UserModel.findByIdAndUpdate(userId, userData, {
         new: true,
       });
- 
+
       if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -59,7 +65,7 @@ const UserController = {
   },
 
   // DELETE /users/:id
-  deleteUser: async (req:Request, res:Response) => {
+  deleteUser: async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;
       const deletedUser = await UserModel.findByIdAndDelete(userId);
