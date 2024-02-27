@@ -27,24 +27,4 @@ router.get("/test", async (req, res) => {
   }
 });
 
-router.post(
-  "/upload",
-  // upload.single('image'),
-  async (req: any, res: any) => {
-    if (!req.file) return res.status(400).send("No file uploaded.");   
-    try {
-      console.log(req.file)
-      const newImage = new Image({
-        data: req.file.buffer,
-        contentType: req.file.mimetype,
-      });
-      await newImage.save();
-      res.status(200).send("File uploaded successfully.");
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Error uploading file.");
-    }
-  }
-);
-
 export default router;

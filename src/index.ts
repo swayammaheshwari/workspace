@@ -11,7 +11,8 @@ import startRoutes from "./routes/startRoutes";
 import UsersRoutes from "./routes/userRoutes";
 import redisRoutes from "./routes/redis";
 import pgRoutes from "./routes/pgRoutes";
-import testRoute from "./routes/test.route" //test route
+import uploadRoutes from "./routes/uploadRoute"
+import testRoute from "./routes/test.route"; //test route
 
 dotenv.config();
 const app: Express = express();
@@ -25,6 +26,7 @@ app.use(startRoutes);
 app.use(UsersRoutes);
 app.use(redisRoutes);
 app.use(pgRoutes);
+app.use(uploadRoutes);
 //test routes
 app.use(testRoute);
 
@@ -36,7 +38,7 @@ const start = async () => {
 
     app.listen(process.env.PORT, () => {
       console.log(
-        `[server]: Server is running at http://localhost:${process.env.PORT}`
+        `[server]: Server is running at ${process.env.HOST}${process.env.PORT}`
       );
     });
   } catch (error) {

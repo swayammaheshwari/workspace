@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ctrl+S Detection</title>
+</head>
+<body>
+<script>
+document.addEventListener('keydown', function(event) {
+    // Check if Ctrl+S is pressed
+    if (event.ctrlKey && event.key === 's') {
+        // Prevent default behavior (saving the page)
+        event.preventDefault();
+        
+        // Execute your desired action here
+        console.log("Ctrl+S pressed");
+        
+        // You can add any action you want here
+        // For example, you can call a function to save data or perform some action
+    }
+});
+</script>
+</body>
+</html>
