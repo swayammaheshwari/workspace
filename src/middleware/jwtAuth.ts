@@ -2,19 +2,14 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { Secret } from "jsonwebtoken";
 
 // Middleware function to verify JWT token
-function verifyToken(req: Request, res: Response, next: NextFunction) {
+export function verifyToken(req: Request, res: Response, next: NextFunction) {
   // Get the JWT token from the request headers
   const token = req.headers["authorization"];
 
-  // Check if token is provided
   if (!token) {
     return res.status(403).json({ message: "No token provided." });
   }
-  
-  console.log(token);
-  console.log(process.env.JWT_SECRET_KEY);
 
-  // Verify the token
   jwt.verify(
     token as string,
     process.env.JWT_SECRET_KEY as Secret,
@@ -33,4 +28,32 @@ function verifyToken(req: Request, res: Response, next: NextFunction) {
   );
 }
 
-export default verifyToken;
+export function generateToken(req: any, res: Response, next: NextFunction) {
+  const { name, email } = req.body;
+
+  // Check if name and email are provided
+  if (!name || !email) {
+    return res.status(400).json({
+      message: "Both name and email are required to generate a token.",
+    });
+  }
+
+  try {
+    // Create the token with name and email
+    const token = jwt.sign(
+      { name, email },
+      process.env.JWT_SECRET_KEY as Secret,
+      { expiresIn: "1h" }
+    );
+
+    // Attach the generated token to the request object
+    req.generatedToken = token;
+
+    // Move to the next middleware/route handler
+    next();
+  } catch (error) {
+    // Handle any errors that occur during token generation
+    console.error("Error generating token:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+}

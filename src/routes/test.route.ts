@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { User } from "../sequelize/models/user";
-import { Image } from "../models/imageModel";
-import { upload } from "../middleware/multer";
 
 const router = Router();
 
