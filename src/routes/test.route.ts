@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { User } from "../sequelize/models/user";
+import routeLogger from "../middleware/logs";
 
 const router = Router();
 
@@ -24,5 +25,14 @@ router.get("/test", async (req, res) => {
     res.json("fatt gya!");
   }
 });
+
+
+router.get("/test/logs", routeLogger, async (req,res)=>{
+  try {
+    res.send('Hello World!');
+  } catch (error) {
+    
+  }
+})
 
 export default router;

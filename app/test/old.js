@@ -1,3 +1,5 @@
-const regex = /const\s+formInputValuesUpdated\s*=(?=.*titleInput\.value\s*(!==|!=)\s*currentTask\.title)/
+let r = "gg{{"
 
-assert.match(code, regex)
+if (r.includes("gg")) {
+    console.log("first")
+}
