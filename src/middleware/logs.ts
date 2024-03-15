@@ -11,8 +11,16 @@ function routeLogger(req: Request, res: Response, next: NextFunction) {
     const { method, url } = req;
     const logMessage = `${timestamp} - ${method} ${url}\n`;
 
+    // Define the log file path
+    const logFolderPath = path.join(process.cwd(), 'logs');
+    const logFilePath = path.join(logFolderPath, 'routes.log');
+
+    // Check if the logs folder exists, if not, create it
+    if (!fs.existsSync(logFolderPath)) {
+        fs.mkdirSync(logFolderPath);
+    }
+
     // Log the route to a file
-    const logFilePath = ( 'logs/routes.log');
     fs.appendFile(logFilePath, logMessage, (err) => {
         if (err) {
             console.error('Error writing to routes.log:', err);

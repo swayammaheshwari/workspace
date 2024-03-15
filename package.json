@@ -3,6 +3,7 @@
   "version": "2.0",
   "description": "These is app which has three database and typescript embeded",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "test": "jest --coverage",
     "build": "npx tsc",
