@@ -1,0 +1,713 @@
+openapi: 3.0.0
+info:
+  title: FreJun API
+  version: 1.0.0
+  description: API documentation for integrating with FreJun using OAuth 2.0
+
+servers:
+  - url: https://api.frejun.com
+
+paths:
+  /api/v1/oauth/token/:
+    get:
+      summary: Obtain Access token
+      parameters:
+        - name: code
+          in: query
+          description: Authorization code obtained after user authentication
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully generated access and refresh tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_in:
+                    type: number
+                  token_type:
+                    type: string
+        '400':
+          description: Invalid code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          description: Access code has expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '403':
+          description: You don't have enough permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Something went wrong. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/v1/oauth/token/refresh/:
+    post:
+      summary: Refresh Access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+      responses:
+        '200':
+          description: Successfully generated new access and refresh tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_in:
+                    type: number
+        '400':
+          description: Missing necessary parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          description: Refresh token has been revoked or invalid/expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '403':
+          description: You don't have permission to get tokens for this account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Something went wrong. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+paths:
+  /api/v1/oauth/verify-token/:
+    post:
+      summary: Verify Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: Token is invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                  code:
+                    type: string
+
+  /api/v1/integrations/create-call/:
+    post:
+      summary: Initiate Call API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_email:
+                  type: string
+                candidate_number:
+                  type: string
+                candidate_name:
+                  type: string
+                candidate_id:
+                  type: string
+                job_id:
+                  type: string
+                transaction_id:
+                  type: string
+      headers:
+        Authorization:
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully initiated the call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                      info:
+                        type: string
+                      event_id:
+                        type: integer
+                      call_id:
+                        type: string
+                      candidate_name:
+                        type: string
+        '401':
+          description: Invalid authorization credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Invalid phone number/country code or missing necessary parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          description: FreJun user or phone number doesn’t exist with the provided details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Error while initiating the call. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/v1/integrations/calls/:
+    get:
+      summary: Calls API
+      headers:
+        Authorization:
+          schema:
+            type: string
+      parameters:
+        - name: call_id
+          in: query
+          description: Unique identifier for the call
+          schema:
+            type: string
+        - name: user_email
+          in: query
+          description: Email of the user's FreJun account
+          schema:
+            type: string
+        - name: candidate_number
+          in: query
+          description: Receiver number (+91XXXXXXXXX)
+          schema:
+            type: string
+        - name: candidate_name
+          in: query
+          description: Receiver’s Name
+          schema:
+            type: string
+        - name: candidate_id
+          in: query
+          description: Reference Id from your platform
+          schema:
+            type: string
+        - name: job_id
+          in: query
+          description: Reference Id from your platform
+          schema:
+            type: string
+        - name: transaction_id
+          in: query
+          description: Reference Id from your platform
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved calls data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      next:
+                        type: string
+                      previous:
+                        type: string
+                      results:
+                        type: array
+                        items:
+                          type: object
+        '401':
+          description: Invalid authorization credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Something went wrong. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/v1/integrations/call-analytics/:
+    get:
+      summary: Call Analytics API
+      headers:
+        Authorization:
+          schema:
+            type: string
+      parameters:
+        - name: date_start
+          in: query
+          description: Start date in YYYY-MM-DD format
+          schema:
+            type: string
+          required: true
+        - name: date_end
+          in: query
+          description: End date in YYYY-MM-DD format
+          schema:
+            type: string
+          required: true
+        - name: users
+          in: query
+          description: List of User Emails
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successfully retrieved user-wise call analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+  /api/v1/integrations/create-webhook/:
+    post:
+      summary: Create webhook API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                callback_url:
+                  type: string
+      headers:
+        Authorization:
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Successfully created webhook for the event
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      event:
+                        type: string
+                      active:
+                        type: boolean
+                      callback_url:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+        '401':
+          description: Given token is not valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+        '400':
+          description: Webhook already exists for the given app and event or invalid data provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Something went wrong. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+          
+  /api/v1/integrations/webhook/{id}/:
+    put:
+      summary: Update webhook API
+      parameters:
+        - name: id
+          in: path
+          description: ID of the webhook to update
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                active:
+                  type: boolean
+                callback_url:
+                  type: string
+      headers:
+        Authorization:
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully updated webhook
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      event:
+                        type: string
+                      active:
+                        type: boolean
+                      callback_url:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+        '401':
+          description: Given token is not valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+        '403':
+          description: You don't have enough permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          description: Resource not found with the provided ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Invalid data provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Something went wrong. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+    delete:
+      summary: Delete webhook API
+      parameters:
+        - name: id
+          in: path
+          description: ID of the webhook to delete
+          required: true
+          schema:
+            type: integer
+      headers:
+        Authorization:
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully deleted webhook
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          description: Given token is not valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+        '403':
+          description: You don't have enough permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          description: Resource not found with the provided ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '500':
+          description: Something went wrong. Please contact FreJun
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+    get:
+      summary: Retrieve all webhooks API
+      headers:
+        Authorization:
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved all webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        event:
+                          type: string
+                        active:
+                          type: boolean
+                        callback_url:
+                          type: string
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
+        '401':
+          description: Given token is not valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+
