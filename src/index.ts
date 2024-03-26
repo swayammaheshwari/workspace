@@ -41,8 +41,8 @@ app.use(testRoute);
 const start = async () => {
   try {
     // await connectToRedis();
-    await connectToMongoDB();
-    await connectToPostgreSQL();
+    // await connectToMongoDB();
+    // await connectToPostgreSQL();
 
     app.listen(process.env.PORT, () => {
       console.log(
