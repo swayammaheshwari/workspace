@@ -15,6 +15,7 @@ import redisRoutes from "./routes/redis";
 import pgRoutes from "./routes/pgRoutes";
 import uploadRoutes from "./routes/uploadRoute";
 import testRoute from "./routes/test.route"; //test route
+import routeLogger from "./middleware/logs";
 
 dotenv.config();
 const app: Express = express();
@@ -24,10 +25,9 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV !== "production") {
-  console.log("Debugging is enabled!");
-  app.use(debugMiddleware);
-}
+if (process.env.NODE_ENV == "development") app.use(debugMiddleware);
+else app.use(routeLogger);
+  
 
 app.use(startRoutes);
 app.use(UsersRoutes);
