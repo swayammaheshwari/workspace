@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { User } from "../sequelize/models/user";
 import routeLogger from "../middleware/logs";
+import * as fs from "fs";
+import { convertYamlToPostman } from "../services/openapi_to_postman";
 
 const router = Router();
 
@@ -14,25 +16,14 @@ async function createUser() {
   }
 }
 
-router.get("/test", async (req, res) => {
+router.post("/test", routeLogger, async (req, res) => {
   try {
-    // const user = "";
-    const user = createUser();
-    // const users = await User.findAll();
-    res.json(user);
+    console.log(req.body)
+    const result = convertYamlToPostman(req.body);
+    res.send(result)
   } catch (error) {
-    console.log(error);
-    res.json("fatt gya!");
+    res.status(500).send("Error in code: " + error);
   }
 });
-
-
-router.get("/test/logs", routeLogger, async (req,res)=>{
-  try {
-    res.send('Hello World!');
-  } catch (error) {
-    
-  }
-})
 
 export default router;
