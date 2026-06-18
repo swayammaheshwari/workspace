@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation</title>
+</head>
+
+<body class="min-h-screen bg-[#050816] text-white antialiased overflow-x-hidden">
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.35),transparent_35%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.28),transparent_32%),linear-gradient(180deg,#050816,#020617)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:48px_48px]"></div>
+  </div>
+
+  <header id="appHeader" class="sticky top-0 z-50 border-b border-white/10 bg-[#050816]/75 backdrop-blur-2xl"></header>
+
+  <main class="mx-auto w-full max-w-7xl px-5 sm:px-8">
+    <section class="relative py-20 sm:py-28 text-center">
+      <div class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-2xl backdrop-blur-xl">
+        <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.9)]"></span>
+        Documentation Portal
+      </div>
+
+      <h1 id="collectionTitle" class="mx-auto max-w-5xl bg-gradient-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-5xl font-black tracking-[-0.07em] text-transparent sm:text-7xl lg:text-8xl">
+        Loading docs...
+      </h1>
+
+      <p id="collectionDescription" class="mx-auto mt-7 max-w-3xl text-base leading-8 text-slate-400 sm:text-lg"></p>
+
+      <div class="mx-auto mt-10 max-w-3xl rounded-[2rem] border border-white/10 bg-white/[0.07] p-2 shadow-[0_30px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+        <div class="flex items-center gap-3 rounded-[1.5rem] bg-black/25 px-5">
+          <span class="text-slate-400">⌘</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search pages..."
+            class="h-16 w-full bg-transparent text-base text-white outline-none placeholder:text-slate-500"
+          />
+          <span class="hidden rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-400 sm:inline">Search</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="pb-20">
+      <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p class="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">Pages</p>
+          <h2 class="text-3xl font-black tracking-[-0.05em] text-white sm:text-5xl">Explore documentation</h2>
+        </div>
+        <p id="pageCount" class="text-sm text-slate-400"></p>
+      </div>
+
+      <div id="cardsGrid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+
+    <section class="pb-24">
+      <div class="mb-8">
+        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-violet-300">Hierarchy</p>
+        <h2 class="text-3xl font-black tracking-[-0.05em] text-white sm:text-5xl">Documentation map</h2>
+      </div>
+
+      <div id="docTree" class="grid gap-4"></div>
+    </section>
+  </main>
+
+  <footer id="appFooter" class="border-t border-white/10 bg-white/[0.03] backdrop-blur-xl"></footer>
+
+  <script>
+    const BASE_URL = "https://api.docstar.io";
+    const COLLECTION_ID = "vtYXax8DDrLB";
+    const API_URL = `${BASE_URL}/p/getSideBarData?collectionId=${COLLECTION_ID}`;
+
+    const $ = (id) => document.getElementById(id);
+
+    let pages = {};
+    let renderablePages = [];
+
+    function titleOf(page) {
+      return page?.publishedPage?.name || page?.name || "Untitled page";
+    }
+
+    function imageOf(page) {
+      return page?.publishedPage?.featureImage?.url || "";
+    }
+
+    function isValidPage(page) {
+      return page && page.state !== "DELETED" && page.type !== 0 && page.id !== COLLECTION_ID;
+    }
+
+    function childrenOf(page) {
+      const childIds = Array.isArray(page.child) ? page.child : [];
+      return childIds.map(id => pages[id]).filter(isValidPage);
+    }
+
+    function childCount(page) {
+      return childrenOf(page).length;
+    }
+
+    function renderImage(page) {
+      const image = imageOf(page);
+
+      if (!image) {
+        return `
+          <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/30 via-cyan-500/20 to-fuchsia-500/30">
+            <div class="rounded-3xl border border-white/10 bg-white/10 px-5 py-4 text-4xl backdrop-blur-xl">✦</div>
+          </div>
+        `;
+      }
+
+      return `
+        <img
+          src="${image}"
+          alt="${titleOf(page)}"
+          loading="lazy"
+          class="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+          onerror="this.parentElement.innerHTML='<div class=&quot;flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/30 via-cyan-500/20 to-fuchsia-500/30&quot;><div class=&quot;rounded-3xl border border-white/10 bg-white/10 px-5 py-4 text-4xl backdrop-blur-xl&quot;>✦</div></div>'"
+        />
+      `;
+    }
+
+    function renderCards(list) {
+      $("pageCount").textContent = `${list.length} page${list.length === 1 ? "" : "s"} available`;
+
+      if (!list.length) {
+        $("cardsGrid").innerHTML = `
+          <div class="col-span-full rounded-[2rem] border border-dashed border-white/15 bg-white/[0.04] p-12 text-center text-slate-400">
+            No pages found.
+          </div>
+        `;
+        return;
+      }
+
+      $("cardsGrid").innerHTML = list.map(page => {
+        const children = childrenOf(page);
+        const preview = children.slice(0, 3).map(child => `
+          <div class="truncate text-sm text-slate-400">→ ${titleOf(child)}</div>
+        `).join("");
+
+        return `
+          <article class="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] shadow-2xl backdrop-blur-xl transition duration-300 hover:-translate-y-2 hover:border-cyan-300/40 hover:bg-white/[0.09]">
+            <div class="h-48 overflow-hidden">
+              ${renderImage(page)}
+            </div>
+
+            <div class="p-6">
+              <div class="mb-4 inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-slate-400">
+                ${childCount(page)} child page${childCount(page) === 1 ? "" : "s"}
+              </div>
+
+              <h3 class="line-clamp-2 text-2xl font-black tracking-[-0.04em] text-white">
+                ${titleOf(page)}
+              </h3>
+
+              <div class="mt-5 space-y-2">
+                ${preview || `<div class="text-sm text-slate-500">No child pages available</div>`}
+              </div>
+
+              <a href="" class="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200">
+                Open page
+                <span>→</span>
+              </a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderTree(list) {
+      if (!list.length) {
+        $("docTree").innerHTML = `
+          <div class="rounded-[2rem] border border-dashed border-white/15 bg-white/[0.04] p-10 text-center text-slate-400">
+            No hierarchy found.
+          </div>
+        `;
+        return;
+      }
+
+      $("docTree").innerHTML = list.map(page => {
+        const children = childrenOf(page);
+
+        return `
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 backdrop-blur-xl">
+            <div class="mb-4 flex items-center justify-between gap-4">
+              <h3 class="text-xl font-black tracking-[-0.03em] text-white">${titleOf(page)}</h3>
+              <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">
+                ${children.length} child${children.length === 1 ? "" : "ren"}
+              </span>
+            </div>
+
+            ${
+              children.length
+                ? `<div class="space-y-2 border-l border-white/10 pl-5">
+                    ${children.map(child => `
+                      <div class="relative rounded-xl bg-white/[0.04] px-4 py-3 text-sm text-slate-300 before:absolute before:-left-5 before:top-1/2 before:h-px before:w-5 before:bg-white/20">
+                        ${titleOf(child)}
+                      </div>
+                    `).join("")}
+                  </div>`
+                : `<p class="text-sm text-slate-500">No child pages.</p>`
+            }
+          </div>
+        `;
+      }).join("");
+    }
+
+    function applySearch() {
+      const query = $("searchInput").value.trim().toLowerCase();
+
+      if (!query) {
+        renderCards(renderablePages);
+        renderTree(renderablePages);
+        return;
+      }
+
+      const filtered = renderablePages.filter(page => {
+        const parentMatch = titleOf(page).toLowerCase().includes(query);
+        const childMatch = childrenOf(page).some(child =>
+          titleOf(child).toLowerCase().includes(query)
+        );
+
+        return parentMatch || childMatch;
+      });
+
+      renderCards(filtered);
+      renderTree(filtered);
+    }
+
+    async function init() {
+      try {
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("API failed");
+        }
+
+        const data = await response.json();
+
+        pages = data?.pages || {};
+
+        const collection =
+          data?.collections?.[COLLECTION_ID] ||
+          Object.values(data?.collections || {})[0];
+
+        if (!collection) {
+          throw new Error("Collection missing");
+        }
+
+        document.title = collection.name || "Documentation";
+
+        $("appHeader").innerHTML = collection?.docProperties?.defaultHeader || "";
+        $("appFooter").innerHTML = collection?.docProperties?.defaultFooter || "";
+
+        $("collectionTitle").textContent = collection.name || "Documentation";
+        $("collectionDescription").textContent =
+          collection.description || "Browse guides, references, tutorials, and resources.";
+
+        renderablePages = Object.values(pages).filter(isValidPage);
+
+        renderCards(renderablePages);
+        renderTree(renderablePages);
+
+        $("searchInput").addEventListener("input", applySearch);
+
+      } catch (error) {
+        console.error(error);
+
+        $("collectionTitle").textContent = "Documentation unavailable";
+        $("collectionDescription").textContent = "Unable to load documentation from the API.";
+
+        $("cardsGrid").innerHTML = `
+          <div class="col-span-full rounded-[2rem] border border-red-400/20 bg-red-500/10 p-10 text-center text-red-200">
+            API failed. Please check BASE_URL, collection ID, or response format.
+          </div>
+        `;
+
+        $("docTree").innerHTML = "";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
