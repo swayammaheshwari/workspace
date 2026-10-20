@@ -1,0 +1,11 @@
+name = "free-llm-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[ai]
+binding = "AI"
+
+[vars]
+MAX_TOKENS_CAP = "512"
+# API keys are a secret, not stored here:
+#   npx wrangler secret put API_KEYS   (comma-separated list, e.g. sk-free-abc,sk-free-def)
