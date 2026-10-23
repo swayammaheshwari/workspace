@@ -9,14 +9,25 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      API_KEYS: ${{ secrets.API_KEYS }}
     steps:
       - uses: actions/checkout@v4
-      - uses: cloudflare/wrangler-action@v3
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: api
+      - name: Upload API_KEYS secret
+        if: env.API_KEYS != ''
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: api
           secrets: |
             API_KEYS
-        env:
-          API_KEYS: ${{ secrets.API_KEYS }}
+      - name: Warn if API_KEYS missing
+        if: env.API_KEYS == ''
+        run: echo "::warning::API_KEYS secret not set - every /v1 request will return 401 until you add it and re-run."
