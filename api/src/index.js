@@ -1,6 +1,6 @@
 // OpenAI-compatible gateway in front of Cloudflare Workers AI.
 const MODELS = {
-  "llama-8b": "@cf/meta/llama-3.1-8b-instruct",
+  "llama-8b": "@cf/meta/llama-3.1-8b-instruct-fp8",
   "llama-3b": "@cf/meta/llama-3.2-3b-instruct",
 };
 const DEFAULT_MODEL = "llama-8b";
