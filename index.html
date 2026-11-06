@@ -4,11 +4,199 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome</title>
+  <title>Workspace Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #fff;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    /* Animated colour blobs behind the glass */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.7;
+      z-index: 0;
+      animation: float 14s ease-in-out infinite;
+    }
+    .b1 { width: 420px; height: 420px; background: #7c3aed; top: -100px; left: -80px; }
+    .b2 { width: 380px; height: 380px; background: #06b6d4; bottom: -120px; right: -60px; animation-delay: -5s; }
+    .b3 { width: 300px; height: 300px; background: #ec4899; top: 45%; left: 55%; animation-delay: -9s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, -50px) scale(1.12); }
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 560px;
+      padding: 36px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; }
+    .sub { margin-top: 6px; color: rgba(255, 255, 255, 0.65); font-size: 0.95rem; }
+
+    .row { display: flex; align-items: center; gap: 14px; margin-top: 28px; }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.75), rgba(6, 182, 212, 0.75));
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+    }
+    button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+    button:active:not(:disabled) { transform: translateY(0); }
+    button:disabled { opacity: 0.7; cursor: progress; }
+
+    .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    button.loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .badge {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .badge.ok { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.6); color: #bbf7d0; }
+    .badge.err { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.6); color: #fecaca; }
+
+    .output-wrap {
+      margin-top: 22px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+    .output-head {
+      padding: 10px 16px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.55);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    pre {
+      padding: 16px;
+      min-height: 120px;
+      max-height: 280px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #e2e8f0;
+    }
+    pre:empty::before { content: "Response will appear here"; color: rgba(255, 255, 255, 0.35); }
+  </style>
 </head>
 
 <body>
-  <h1>Workspace Dashboard</h1>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <main class="card">
+    <h1>Workspace Dashboard</h1>
+    <p class="sub">Trigger <code>curl.sh</code> and see the response live.</p>
+
+    <div class="row">
+      <button id="run"><span class="spinner"></span><span id="label">Run curl.sh</span></button>
+      <span id="status" class="badge">Idle</span>
+    </div>
+
+    <div class="output-wrap">
+      <div class="output-head">Response</div>
+      <pre id="output"></pre>
+    </div>
+  </main>
+
+  <script>
+    const btn = document.getElementById("run");
+    const label = document.getElementById("label");
+    const out = document.getElementById("output");
+    const status = document.getElementById("status");
+
+    // Served by server.js (directly or via ngrok): call the same origin.
+    // Opened from elsewhere (Live Server, file://): fall back to the local server.
+    const servedByNode = location.port === "3000" || location.hostname.endsWith("ngrok-free.app") || location.hostname.endsWith("ngrok.app") || location.hostname.endsWith("ngrok.io");
+    const API_BASE = servedByNode ? "" : "http://localhost:3000";
+
+    function setStatus(text, cls) {
+      status.textContent = text;
+      status.className = "badge" + (cls ? " " + cls : "");
+    }
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.classList.add("loading");
+      label.textContent = "Running...";
+      setStatus("Running", "");
+      out.textContent = "";
+      try {
+        const res = await fetch(API_BASE + "/run-curl", { method: "POST" });
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { data = null; }
+        if (!data) {
+          setStatus("Error", "err");
+          out.textContent = "Unexpected response (HTTP " + res.status + "):\n" + (text || "(empty)");
+        } else {
+          setStatus(data.ok ? "Success" : "Failed (exit " + data.code + ")", data.ok ? "ok" : "err");
+          // curl's progress meter goes to stderr even on success, so only show stderr on failure
+          let body = data.stdout.trim();
+          try { body = JSON.stringify(JSON.parse(body), null, 2); } catch {}
+          out.textContent = data.ok ? body : (body + "\n" + data.stderr).trim();
+        }
+      } catch (e) {
+        setStatus("Offline", "err");
+        out.textContent = "Could not reach server. Is `node server.js` running?\n" + e.message;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("loading");
+        label.textContent = "Run curl.sh";
+      }
+    });
+  </script>
 </body>
 
 </html>
