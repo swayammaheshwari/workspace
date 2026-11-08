@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Video Studio</title>
+  <title>Video Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -254,19 +254,68 @@
       margin-left: auto;
       margin-bottom: 10px;
     }
+
+    .paste-modal {
+      width: 560px;
+      max-width: 90vw;
+    }
+
+    .paste-modal h3 {
+      font-size: 18px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-dim);
+      margin: 12px 0 6px;
+    }
+
+    .text-input {
+      width: 100%;
+      background: #0e1119;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 10px 12px;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .textarea {
+      font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+      font-size: 13px;
+      min-height: 220px;
+      resize: vertical;
+      white-space: pre;
+    }
+
+    .paste-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 14px;
+    }
   </style>
 </head>
 
 <body>
   <header>
-    <div class="eyebrow">⚡ Manim Studio</div>
-    <h1>Math Video Studio</h1>
-    <p>Render, preview, and download polished math animations — straight from your scripts.</p>
+    <div class="eyebrow">⚡ Video Studio</div>
+    <h1>Video Studio</h1>
+    <p>Render, preview, and download videos — math explainers (Manim) and "did you know" stat reveals (HyperFrames), from the same place.</p>
   </header>
 
   <div class="toolbar">
-    <button id="importBtn">+ Import Script</button>
-    <input type="file" id="importInput" accept=".py" style="display:none;">
+    <button id="copyPromptBtn" class="secondary">📋 Copy AI Prompt</button>
+    <button id="importBtn">+ Import YAML/JSON</button>
+    <input type="file" id="importInput" accept=".yml,.yaml,.json" style="display:none;">
+    <button id="pasteBtn" class="secondary">📝 Paste YAML</button>
     <span id="importStatus" class="status"></span>
   </div>
 
@@ -277,6 +326,22 @@
     <div class="modal-content">
       <button class="modal-close secondary" id="modalCloseBtn">Close ✕</button>
       <video id="modalVideo" controls></video>
+    </div>
+  </div>
+
+  <div id="pasteModal" class="modal-overlay">
+    <div class="modal-content paste-modal">
+      <button class="modal-close secondary" id="pasteCloseBtn">Close ✕</button>
+      <h3 style="margin-top:0;">Paste YAML</h3>
+      <label class="field-label" for="pasteFilename">File name</label>
+      <input type="text" id="pasteFilename" placeholder="my_new_video" class="text-input">
+      <label class="field-label" for="pasteContent">YAML (or JSON) content</label>
+      <textarea id="pasteContent" class="text-input textarea" placeholder="type: golden_ratio_spiral&#10;class_name: MyVideo&#10;..."></textarea>
+      <div class="paste-actions">
+        <button id="pasteSaveBtn">Save to videos_script/</button>
+        <span id="pasteStatus" class="status"></span>
+      </div>
+      <div id="pasteError" class="error"></div>
     </div>
   </div>
 
@@ -362,7 +427,8 @@
         card.className = "script-card";
 
         const title = document.createElement("h3");
-        title.textContent = script.file;
+        const engineBadge = script.video_type === "hyperframes" ? "🏺 hyperframes" : "⚡ manim";
+        title.textContent = `${script.file}  ·  ${engineBadge}`;
         card.appendChild(title);
 
         for (const scene of script.scenes) {
@@ -418,8 +484,8 @@
       const file = importInput.files[0];
       if (!file) return;
 
-      if (!file.name.endsWith(".py")) {
-        setStatus(importStatus, "failed", "Only .py files are allowed");
+      if (!/\.(ya?ml|json)$/.test(file.name)) {
+        setStatus(importStatus, "failed", "Only .yml, .yaml, or .json files are allowed");
         importInput.value = "";
         return;
       }
@@ -442,6 +508,89 @@
         setStatus(importStatus, "failed", String(e));
       } finally {
         importInput.value = "";
+      }
+    });
+
+    const copyPromptBtn = document.getElementById("copyPromptBtn");
+    copyPromptBtn.addEventListener("click", async () => {
+      const originalText = copyPromptBtn.textContent;
+      try {
+        const res = await fetch("/api/prompt");
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        copyPromptBtn.textContent = "✅ Copied!";
+      } catch (e) {
+        copyPromptBtn.textContent = "❌ Failed to copy";
+      } finally {
+        setTimeout(() => (copyPromptBtn.textContent = originalText), 1800);
+      }
+    });
+
+    const pasteModal = document.getElementById("pasteModal");
+    const pasteBtn = document.getElementById("pasteBtn");
+    const pasteCloseBtn = document.getElementById("pasteCloseBtn");
+    const pasteFilename = document.getElementById("pasteFilename");
+    const pasteContent = document.getElementById("pasteContent");
+    const pasteSaveBtn = document.getElementById("pasteSaveBtn");
+    const pasteStatus = document.getElementById("pasteStatus");
+    const pasteError = document.getElementById("pasteError");
+
+    function openPasteModal() {
+      pasteModal.classList.add("open");
+      pasteError.textContent = "";
+      setStatus(pasteStatus, "", "");
+    }
+
+    function closePasteModal() {
+      pasteModal.classList.remove("open");
+    }
+
+    pasteBtn.addEventListener("click", openPasteModal);
+    pasteCloseBtn.addEventListener("click", closePasteModal);
+    pasteModal.addEventListener("click", (e) => {
+      if (e.target === pasteModal) closePasteModal();
+    });
+
+    pasteSaveBtn.addEventListener("click", async () => {
+      const filename = pasteFilename.value.trim();
+      const content = pasteContent.value;
+      pasteError.textContent = "";
+
+      if (!filename) {
+        pasteError.textContent = "Please enter a file name.";
+        return;
+      }
+      if (!content.trim()) {
+        pasteError.textContent = "Please paste some YAML (or JSON) content.";
+        return;
+      }
+
+      pasteSaveBtn.disabled = true;
+      setStatus(pasteStatus, "rendering", "Saving...");
+
+      try {
+        const res = await fetch("/api/save_yaml", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename, content }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          setStatus(pasteStatus, "done", `Saved ${data.filename}`);
+          await loadScripts();
+          setTimeout(closePasteModal, 900);
+          pasteFilename.value = "";
+          pasteContent.value = "";
+        } else {
+          setStatus(pasteStatus, "failed", "Failed");
+          pasteError.textContent = data.error || "Unknown error";
+        }
+      } catch (e) {
+        setStatus(pasteStatus, "failed", "Failed");
+        pasteError.textContent = String(e);
+      } finally {
+        pasteSaveBtn.disabled = false;
       }
     });
 

@@ -1,6 +1,14 @@
 # Manim intermediate build artifacts (Tex, texts, images, partial movie files)
 .cache/
 
+# HyperFrames intermediate build artifacts (generated narration audio, raw
+# renders before being moved to hyperframes_videos/, internal lock/cache state)
+hyperframes/demo/assets/narration/
+hyperframes/demo/assets/narration.mp3
+hyperframes/demo/renders/
+hyperframes/demo/.hyperframes/
+hyperframes/demo/index.html
+
 # Logs
 logs
 *.log

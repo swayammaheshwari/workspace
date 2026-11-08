@@ -1,0 +1,23 @@
+video_type: hyperframes
+type: did_you_know
+class_name: DholaviraReservoirs
+topic: "Hindu/Indian archaeology — Indus Valley Civilization"
+aspect_ratio: landscape
+duration_seconds: 20
+voice: "Daniel - Steady Broadcaster"
+background_color: "#0b0d14"
+accent_color: green
+title_text: "Did you know?"
+
+narration:
+  hook: "Did you know archaeologists found a five thousand year old city with a water system more advanced than many cities today?"
+  buildup: "It's called Dholavira, a city of the ancient Indus Valley Civilization, in modern-day Gujarat, India."
+  reveal: "The city had over one hundred stone reservoirs, engineered to capture and store monsoon rainwater, five thousand years ago."
+
+reveal_number:
+  start: 0
+  end: 100
+  prefix: ""
+  suffix: "+ reservoirs"
+
+source_text: "Source: Archaeological Survey of India"

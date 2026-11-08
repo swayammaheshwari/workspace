@@ -1,0 +1,14 @@
+video_type: manim
+type: pythagorean_rearrangement
+class_name: RootTenInverse
+voice: "Daniel - Steady Broadcaster"
+background_color: "#0b0d14"
+title_text: "The Mystery of One Over Root Ten"
+narration:
+  intro: "What happens when we take the reciprocal of the square root of ten?"
+  setup: "Imagine a right triangle with sides of length one and three."
+  c_squared: "By the Pythagorean theorem, the hypotenuse squared is one plus nine, which equals ten."
+  slide: "So the hypotenuse is the square root of ten. A surprisingly simple result."
+  reveal: "Now let's take its reciprocal: one divided by the square root of ten."
+  same_area: "Multiply the numerator and denominator by root ten, and the expression becomes root ten divided by ten."
+  conclusion: "And that's the secret! One over root ten equals root ten over ten."

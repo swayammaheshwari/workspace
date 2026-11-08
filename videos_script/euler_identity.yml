@@ -1,0 +1,16 @@
+video_type: manim
+type: euler_identity
+class_name: EulerIdentity
+voice: "Daniel - Steady Broadcaster"
+background_color: "#0b0d14"
+title_text: "The most beautiful equation in math"
+narration:
+  intro: >
+    e to the i pi plus one equals zero — often called the most beautiful
+    equation in mathematics.
+  circle: "Here's the unit circle, drawn on the complex plane."
+  formula_intro: "Euler's formula says e to the i theta equals cosine theta, plus i sine theta."
+  rotation: "Watch what happens as theta sweeps all the way from zero to pi."
+  landing: "The point lands exactly on negative one."
+  minus_one: "So e to the i pi equals negative one."
+  conclusion: "Rearrange it, and you get this: e to the i pi, plus one, equals zero."

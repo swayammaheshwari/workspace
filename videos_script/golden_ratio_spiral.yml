@@ -1,0 +1,13 @@
+video_type: manim
+type: golden_ratio_spiral
+class_name: GoldenRatioSpiral
+voice: "Daniel - Steady Broadcaster"
+background_color: "#0b0d14"
+title_text: "Why is this shape EVERYWHERE in nature?"
+narration:
+  hook: "Why is this shape everywhere, from sunflowers to galaxies?"
+  squares: >
+    These are the Fibonacci numbers: one, one, two, three, five, eight, thirteen.
+    Each number is the sum of the two before it.
+  spiral: "Connect the corners with quarter arcs, and a spiral appears."
+  formula: "This growth ratio is phi, the golden ratio, approximately one point six one eight."
