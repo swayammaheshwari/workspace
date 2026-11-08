@@ -7,6 +7,33 @@ Instructions for an AI agent working on this repository. This project is **one d
 
 Both share the same ElevenLabs `.env` key, the same dashboard (`app.py` / `index.html`, port 5000), and the same `prompt.md` (which asks the user's topic, picks the right `video_type`/`type` itself, and hands back one YAML). **Never mix engines within one video** — a math proof is `manim`, a stat-reveal fact is `hyperframes`; pick one per `.yml`.
 
+## `context/` — write a log entry for every completed change (always do this)
+
+After finishing any requested change to this project — a new video, a new feature, a bug fix, a refactor, a docs update, anything — **create a new file in `context/`** documenting it. This is not optional busywork: it's how the user (and any future agent/session) can see what changed and why without re-reading the whole conversation.
+
+- **Filename**: `context/NNNN-short-kebab-case-slug.md`, where `NNNN` is the next sequential 4-digit number after the highest one already in `context/` (check with a directory listing first — don't guess or reuse a number).
+- **Content**, roughly in this shape (see existing files in `context/` for real examples):
+  ```markdown
+  # NNNN — Short title
+
+  **Date:** YYYY-MM-DD
+
+  ## What was asked
+  (what the user actually requested, in their own terms)
+
+  ## What changed
+  (the actual files/behavior changed, concretely — not vague)
+
+  ## Bugs found / non-obvious gotchas (if any)
+  (anything that silently failed, rendered wrong, or needed a workaround — this is often the most valuable part)
+
+  ## Verified
+  (what you actually tested/observed, not just "should work")
+  ```
+- Write it **after** the change is done and verified, as the last step of that unit of work — not before, and not as a running draft updated mid-task.
+- One file per logical change, not one file per tool call — if a single user request spans many edits (e.g. "add the queue, fix the paths, add a Dockerfile"), that's one `context/` entry covering all of it, not three.
+- Keep it honest: if something wasn't actually tested (e.g. a Dockerfile with no Docker available to build it), say so explicitly rather than implying it was verified.
+
 ## Project structure
 
 ```
@@ -30,6 +57,7 @@ videos/                     # FINAL .mp4 files only, for BOTH engines — nothin
 manim.cfg                   # routes Manim's intermediate output to .cache/, final video to videos/
 .env                         # ELEVENLABS_API_KEY — git-ignored, never commit, shared by both engines
 prompt.md                   # ONE reusable prompt covering both video families — see below
+context/                    # one markdown log entry per completed change — see above, always write one
 ```
 
 ## The core convention: content vs. logic are separate (both engines)
