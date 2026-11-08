@@ -2,11 +2,13 @@
 "Did you know" video.
 
 Usage:
-    .venv/Scripts/python.exe render_hyperframes.py videos_script/dholavira.yml
+    .venv/Scripts/python.exe renderers/render_hyperframes.py videos_script/dholavira.yml
 """
 import argparse
+import hashlib
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -14,13 +16,20 @@ import requests
 import yaml
 from dotenv import load_dotenv
 
-ROOT = Path(__file__).parent.resolve()
+ROOT = Path(__file__).parent.parent.resolve()  # project root (this file lives in renderers/)
 load_dotenv(ROOT / ".env")
 
 PROJECT_DIR = ROOT / "hyperframes" / "demo"
 TEMPLATE_PATH = ROOT / "hyperframes" / "template_index.html"
 VIDEOS_DIR = ROOT / "videos"
 ASSETS_DIR = PROJECT_DIR / "assets" / "narration"
+
+# Persistent cache of synthesized narration, keyed by (text, voice, model), so
+# repeat renders of unchanged content don't re-call the ElevenLabs API (which
+# costs real quota) or re-pay the network round trip. Lives under the same
+# .cache/ convention the Manim engine already uses — git-ignored, safe to
+# delete anytime to force fresh synthesis.
+NARRATION_CACHE_DIR = ROOT / ".cache" / "hyperframes_narration"
 
 ELEVEN_API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
 ELEVEN_MODEL = "eleven_multilingual_v2"
@@ -80,6 +89,13 @@ def get_voice_id(voice_label: str, env) -> str:
 
 
 def synthesize(text: str, voice_id: str, out_path: Path):
+    cache_key = hashlib.sha256(f"{text}|{voice_id}|{ELEVEN_MODEL}".encode("utf-8")).hexdigest()
+    cache_path = NARRATION_CACHE_DIR / f"{cache_key}.mp3"
+
+    if cache_path.exists():
+        shutil.copyfile(cache_path, out_path)
+        return
+
     resp = requests.post(
         f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
         headers={"xi-api-key": ELEVEN_API_KEY, "Content-Type": "application/json"},
@@ -87,7 +103,10 @@ def synthesize(text: str, voice_id: str, out_path: Path):
         timeout=60,
     )
     resp.raise_for_status()
-    out_path.write_bytes(resp.content)
+
+    NARRATION_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_path.write_bytes(resp.content)
+    shutil.copyfile(cache_path, out_path)
 
 
 def probe_duration(path: Path, env) -> float:

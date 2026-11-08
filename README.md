@@ -11,10 +11,11 @@ Both are narrated with [ElevenLabs](https://elevenlabs.io/), sharing one `.env` 
 - A YAML file per video (`videos_script/<name>.yml`) — narration, parameters, and a `video_type`/`type` pair selecting the engine and template. No code to touch for everyday editing.
 - Manim engine: a small library of Python "builders" (`videos_script/builders/<type>.py`), one per video *type*, reused by any YAML of that type.
 - HyperFrames engine: one shared, fixed "did you know" composition template (`hyperframes/template_index.html`).
-- Two render scripts: `render_yaml.py` (Manim) and `render_hyperframes.py` (HyperFrames) — the dashboard picks the right one automatically.
-- A single Flask dashboard (`app.py` + `index.html`, port **5000**) with Play/Download/Import/Paste-YAML/Copy-AI-Prompt buttons for every video, regardless of engine.
+- Two render scripts in `renderers/`: `render_yaml.py` (Manim) and `render_hyperframes.py` (HyperFrames) — the dashboard picks the right one automatically.
+- A single Flask dashboard (`app.py` + `index.html`, port **5000**) with Play/Download/Import/Paste-YAML/Copy-AI-Prompt buttons for every video, regardless of engine. Rendering is queued and runs one video at a time in the background — clicking Play returns instantly and the UI polls for completion, so it's safe behind a reverse proxy/timeout and never runs two heavy renders at once.
 - `prompt.md` — one copy-paste prompt covering both video families; it asks your topic, picks the right engine/type itself, and hands back one ready-to-paste YAML.
 - `AGENTS.md` — full conventions for an AI agent working on this repo.
+- `requirements.txt` / `Dockerfile` / `.dockerignore` — for deploying as a single container (see "Deploying" below).
 
 ## One-time setup
 
@@ -54,11 +55,29 @@ Manim renders are **1080p60** by default (`QUALITY_FLAG`/`QUALITY_ARG` in `app.p
 
 ```bash
 # Manim
-.\.venv\Scripts\python.exe render_yaml.py videos_script/golden_ratio_spiral.yml -q qh
+.\.venv\Scripts\python.exe renderers\render_yaml.py videos_script/golden_ratio_spiral.yml -q qh
 
 # HyperFrames
-.\.venv\Scripts\python.exe render_hyperframes.py videos_script/dholavira.yml
+.\.venv\Scripts\python.exe renderers\render_hyperframes.py videos_script/dholavira.yml
 ```
+
+## Deploying (Docker / Render)
+
+A `Dockerfile` bundles everything both engines need (Python + Manim + LaTeX, Node + HyperFrames + headless Chrome's dependencies, FFmpeg) into one image.
+
+```bash
+docker build -t video-studio .
+docker run -p 5000:5000 -e ELEVENLABS_API_KEY=your_key_here video-studio
+```
+
+**Deploying to Render specifically:**
+1. Create a new **Web Service**, pointed at this repo, with **Docker** as the environment (Render detects the `Dockerfile` automatically).
+2. Add `ELEVENLABS_API_KEY` as an environment variable in Render's dashboard — never commit `.env`.
+3. **Attach a Persistent Disk** mounted over this app's working directory (or at least over `videos_script/` and `videos/`). Without one, every redeploy wipes out every uploaded script and rendered video — Render's default filesystem is ephemeral.
+4. Use a **paid plan**, not the free tier — free-tier services spin down on inactivity, which can kill a render that's in progress in the background worker thread.
+5. The Dockerfile's `CMD` runs `gunicorn --workers 1 ...` — **do not change `--workers` above 1**. The render queue is a single in-process `queue.Queue` + one background thread; more worker processes would each get their own separate queue, silently breaking job tracking (see `AGENTS.md`'s "render queue" section for the full reasoning, and the trigger for when to actually move to a shared queue like Redis+RQ instead).
+
+The Dockerfile was written from documented, known-good dependency lists (Manim's own Docker image, Puppeteer's standard Linux Chrome dependencies) but hasn't been build-tested in development — build and smoke-test it (at least one render per engine) before relying on it in production.
 
 ## Current videos
 

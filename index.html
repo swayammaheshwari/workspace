@@ -381,9 +381,23 @@
       status.innerHTML = state === "rendering" ? `<span class="spinner"></span>${text}` : text;
     }
 
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function pollJob(jobId) {
+      while (true) {
+        await sleep(1500);
+        const res = await fetch(`/api/jobs/${jobId}`);
+        const job = await res.json();
+        if (job.status === "done" || job.status === "failed") return job;
+        // otherwise still "queued" or "running" — keep polling
+      }
+    }
+
     async function renderThen(scriptFile, sceneName, buttons, status, errorBox, onSuccess) {
       buttons.forEach((b) => (b.disabled = true));
-      setStatus(status, "rendering", "Rendering...");
+      setStatus(status, "rendering", "Queued...");
       errorBox.textContent = "";
 
       try {
@@ -394,12 +408,21 @@
         });
         const data = await res.json();
 
-        if (data.success) {
-          setStatus(status, "done", "Done");
-          onSuccess(data.video_url);
-        } else {
+        if (!data.success) {
           setStatus(status, "failed", "Failed");
           errorBox.textContent = data.error || "Unknown error";
+          return;
+        }
+
+        setStatus(status, "rendering", "Rendering...");
+        const job = await pollJob(data.job_id);
+
+        if (job.status === "done") {
+          setStatus(status, "done", "Done");
+          onSuccess(job.video_url);
+        } else {
+          setStatus(status, "failed", "Failed");
+          errorBox.textContent = job.error || "Unknown error";
         }
       } catch (e) {
         setStatus(status, "failed", "Failed");

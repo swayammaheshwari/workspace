@@ -15,11 +15,12 @@ videos_script/
   builders/                # Manim-engine builders only
     __init__.py             # BUILDERS registry: {type_name: build_function}
     <type_name>.py           # Manim animation/geometry code for that video TYPE
-render_yaml.py             # manim engine: reads a .yml, finds its builder, renders via manim
-render_hyperframes.py      # hyperframes engine: reads a .yml, fills the shared template, renders via hyperframes CLI
+renderers/
+  render_yaml.py             # manim engine: reads a .yml, finds its builder, renders via manim
+  render_hyperframes.py      # hyperframes engine: reads a .yml, fills the shared template, renders via hyperframes CLI
 hyperframes/
   demo/                     # the single shared HyperFrames project (used by every hyperframes video)
-    index.html                # OVERWRITTEN per-render by render_hyperframes.py — never hand-edit
+    index.html                # OVERWRITTEN per-render by renderers/render_hyperframes.py — never hand-edit
     compositions/components/count-up.html   # registry component, shared, added once
   template_index.html      # the hyperframes composition TEMPLATE (%%TOKEN%% placeholders)
 app.py                      # single Flask dashboard — routes render by video_type
@@ -77,8 +78,8 @@ Do not stretch an animation's `run_time` to match `tracker.duration` unless that
 ## Rendering
 
 ```bash
-.\.venv\Scripts\python.exe render_yaml.py videos_script/<name>.yml -q ql   # fast 480p preview while iterating
-.\.venv\Scripts\python.exe render_yaml.py videos_script/<name>.yml -q qh   # final 1080p60
+.\.venv\Scripts\python.exe renderers\render_yaml.py videos_script/<name>.yml -q ql   # fast 480p preview while iterating
+.\.venv\Scripts\python.exe renderers\render_yaml.py videos_script/<name>.yml -q qh   # final 1080p60
 ```
 
 ## Verification discipline (important)
@@ -100,7 +101,7 @@ Only move to a final `-qh` render after the `-ql` pass looks correct frame-by-fr
 Unlike the Manim engine (which dynamically builds a Scene class in Python), HyperFrames compositions are plain HTML/CSS/GSAP files rendered by the `hyperframes` Node CLI. There is **one shared project** (`hyperframes/demo/`) whose `index.html` gets **regenerated from scratch** on every render:
 
 1. `render_hyperframes.py` reads a `.yml`'s `narration` dict (`hook`, `buildup`, `reveal`).
-2. For each beat, it calls the ElevenLabs REST API directly (`/v1/text-to-speech/{voice_id}`) — this engine does **not** use `manim_voiceover`; it's a standalone `requests`-based call.
+2. For each beat, it calls the ElevenLabs REST API directly (`/v1/text-to-speech/{voice_id}`) — this engine does **not** use `manim_voiceover`; it's a standalone `requests`-based call. Each call is cached first: `synthesize()` hashes `(text, voice_id, model)` and checks `.cache/hyperframes_narration/<hash>.mp3` before hitting the API, so re-rendering a `.yml` whose narration hasn't changed costs **zero** ElevenLabs quota (mirrors the Manim engine's own `manim_voiceover` caching, implemented independently since this engine doesn't go through that library).
 3. Each beat's mp3 duration is probed via `ffprobe`, concatenated into one `assets/narration.mp3`, and used to compute cumulative `data-start` times for each text beat.
 4. `hyperframes/template_index.html`'s `%%TOKEN%%` placeholders are substituted with the computed timings + content, and the result overwrites `hyperframes/demo/index.html`.
 5. `npx hyperframes check` (lint) then `npx hyperframes render -o <path>` run from inside `hyperframes/demo/`.
@@ -147,7 +148,7 @@ After any template change, render once and scrub to the reveal beat specifically
 ## Rendering
 
 ```bash
-.\.venv\Scripts\python.exe render_hyperframes.py videos_script/<name>.yml
+.\.venv\Scripts\python.exe renderers\render_hyperframes.py videos_script/<name>.yml
 ```
 
 ---
@@ -155,7 +156,19 @@ After any template change, render once and scrub to the reveal beat specifically
 ## Dashboard (`app.py`, single, port 5000)
 
 - Scans `videos_script/*.yml`/`*.yaml`/`*.json` (via `class_name` field, reporting each's `video_type` too) and legacy `*.py` (via regex for `class X(...Scene...):`, always treated as `video_type: manim`).
-- `/api/render` reads the target `.yml`'s `video_type` and dispatches to `render_yaml.py` (manim) or `render_hyperframes.py` (hyperframes) accordingly, then locates that engine's known output path.
 - `QUALITY_FLAG`/`QUALITY_ARG` control the Manim engine's default render quality (currently `-qh` / `qh`); the HyperFrames engine has no equivalent quality flag today.
 - `/api/upload` and `/api/save_yaml` accept `.yml`/`.yaml`/`.json` for either engine; `validate_yaml_content` branches its checks on `video_type`.
 - `index.html` shows a small engine badge (`⚡ manim` / `🏺 hyperframes`) per card so it's clear which renderer a video uses at a glance.
+
+## The render queue (do not remove — this is load-bearing for deployment)
+
+`/api/render` does **not** render synchronously. Rendering takes anywhere from ~15s to a couple minutes, and a blocking request that long risks being killed by a reverse proxy/platform timeout once this is deployed (Render, etc. commonly cap request duration well under that). Instead:
+
+- `POST /api/render` validates the script path, pushes `(job_id, script_path, scene_name)` onto an in-process `queue.Queue`, and returns **immediately** with `{"success": true, "job_id": ..., "status": "queued"}` (HTTP 202).
+- A single background worker thread (`_render_worker`, started once at module import time as a daemon thread) pulls jobs off that queue **one at a time** and calls `do_render(...)` — the actual subprocess dispatch to `render_yaml.py` or `render_hyperframes.py`, i.e. exactly the logic that used to live directly in the request handler before the queue existed.
+- `GET /api/jobs/<job_id>` reports that job's current state: `queued` → `running` → `done` (with `video_url`) or `failed` (with `error`). `index.html`'s JS polls this every 1.5s after enqueueing, instead of awaiting a single blocking response.
+- Jobs are processed **strictly one at a time** — this is intentional, not a limitation to "fix": video rendering is CPU-heavy, and two renders racing for the same CPU/GPU tends to make both slower and more failure-prone, not faster.
+
+**Why in-process and in-memory, not Redis/Celery:** this project runs as a single server instance. An in-process `queue.Queue` + one worker thread is the simplest thing that actually solves the two real problems (blocking requests, concurrent renders) at this scale. The explicit trigger to replace it with a persistent/shared queue (Redis + RQ/Celery, or a SQLite-backed one) is **running more than one server instance/replica** — each instance would otherwise have its own separate queue and job dict, so a status poll landing on a different instance than the one that ran the job would see "unknown job_id." Don't add that complexity before it's actually needed.
+
+**Jobs are not persisted.** If the server process restarts while a job is `queued` or `running`, that job's state is gone — the client's poll loop will just get a 404 on `/api/jobs/<job_id>` and should treat that as a failure. This is consistent with the in-memory design above; if job durability across restarts becomes a real requirement, that's part of the same "move to a persistent queue" trigger.

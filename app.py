@@ -1,6 +1,10 @@
+import os
+import queue
 import re
 import subprocess
 import sys
+import threading
+import uuid
 from pathlib import Path
 
 import yaml
@@ -10,9 +14,11 @@ from werkzeug.utils import secure_filename
 ROOT = Path(__file__).parent.resolve()
 SCRIPTS_DIR = ROOT / "videos_script"
 VIDEOS_DIR = ROOT / "videos"
-PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
-RENDER_YAML = ROOT / "render_yaml.py"
-RENDER_HYPERFRAMES = ROOT / "render_hyperframes.py"
+# sys.executable (not a hardcoded .venv path) so this works both locally
+# (Windows venv) and in the Docker image (system-wide pip install, no venv).
+PYTHON = Path(sys.executable)
+RENDER_YAML = ROOT / "renderers" / "render_yaml.py"
+RENDER_HYPERFRAMES = ROOT / "renderers" / "render_hyperframes.py"
 PROMPT_FILE = ROOT / "prompt.md"
 
 sys.path.insert(0, str(SCRIPTS_DIR))
@@ -64,18 +70,10 @@ def api_scripts():
     return jsonify(list_scripts())
 
 
-@app.post("/api/render")
-def api_render():
-    data = request.get_json(force=True)
-    script_name = data.get("script", "")
-    scene_name = data.get("scene", "")
-
-    script_path = (SCRIPTS_DIR / script_name).resolve()
-    if SCRIPTS_DIR.resolve() not in script_path.parents or not script_path.exists():
-        return jsonify({"success": False, "error": "Invalid script"}), 400
-
-    import os
-
+def do_render(script_path: Path, scene_name: str) -> dict:
+    """Runs one render synchronously (called from the worker thread, never
+    directly from a request handler) and returns the same shape the old
+    blocking /api/render used to return directly."""
     env = os.environ.copy()
     ffmpeg_bin = find_ffmpeg_bin()
     if ffmpeg_bin:
@@ -105,7 +103,7 @@ def api_render():
     )
 
     if result.returncode != 0:
-        return jsonify({"success": False, "error": result.stderr[-4000:]}), 500
+        return {"success": False, "error": result.stderr[-4000:]}
 
     module_name = script_path.stem
 
@@ -113,7 +111,7 @@ def api_render():
         # render_hyperframes.py always writes videos/<slug>/<class_name>.mp4 directly.
         video_path = VIDEOS_DIR / module_name / f"{scene_name}.mp4"
         if not video_path.exists():
-            return jsonify({"success": False, "error": "Render finished but video file not found"}), 500
+            return {"success": False, "error": "Render finished but video file not found"}
     else:
         # The quality folder name (e.g. 480p15, 1080p60, or a custom resolution a
         # script sets via config.pixel_height/width) isn't fixed by QUALITY_FLAG
@@ -121,7 +119,7 @@ def api_render():
         script_output_dir = VIDEOS_DIR / module_name
         candidates = list(script_output_dir.glob(f"*/{scene_name}.mp4")) if script_output_dir.is_dir() else []
         if not candidates:
-            return jsonify({"success": False, "error": "Render finished but video file not found"}), 500
+            return {"success": False, "error": "Render finished but video file not found"}
         video_path = max(candidates, key=lambda p: p.stat().st_mtime)
 
     # Some plugins (e.g. manim-voiceover) drop sidecar files (.srt, .wav) next
@@ -132,7 +130,72 @@ def api_render():
             sibling.unlink()
 
     video_rel = video_path.relative_to(VIDEOS_DIR).as_posix()
-    return jsonify({"success": True, "video_url": f"/videos/{video_rel}"})
+    return {"success": True, "video_url": f"/videos/{video_rel}"}
+
+
+# --- Render queue -----------------------------------------------------------
+# One background worker renders jobs one at a time, so the HTTP request that
+# triggers a render returns instantly (important once this sits behind a
+# reverse proxy / platform with a request timeout) and two renders never run
+# concurrently and fight over CPU. In-process and in-memory by design: this
+# project runs as a single server instance, so a plain queue.Queue + one
+# worker thread is enough; if this ever needs multiple instances/workers,
+# that's the point to move to a persistent/shared queue (e.g. Redis+RQ)
+# instead of adding more complexity here pre-emptively.
+job_queue: "queue.Queue[tuple[str, Path, str]]" = queue.Queue()
+jobs: dict[str, dict] = {}
+jobs_lock = threading.Lock()
+
+
+def _set_job(job_id: str, **fields):
+    with jobs_lock:
+        jobs[job_id].update(fields)
+
+
+def _render_worker():
+    while True:
+        job_id, script_path, scene_name = job_queue.get()
+        _set_job(job_id, status="running")
+        try:
+            result = do_render(script_path, scene_name)
+        except Exception as e:  # noqa: BLE001 - surface any unexpected failure to the client
+            result = {"success": False, "error": str(e)}
+
+        if result.get("success"):
+            _set_job(job_id, status="done", video_url=result["video_url"])
+        else:
+            _set_job(job_id, status="failed", error=result.get("error", "Unknown error"))
+        job_queue.task_done()
+
+
+threading.Thread(target=_render_worker, daemon=True).start()
+
+
+@app.post("/api/render")
+def api_render():
+    data = request.get_json(force=True)
+    script_name = data.get("script", "")
+    scene_name = data.get("scene", "")
+
+    script_path = (SCRIPTS_DIR / script_name).resolve()
+    if SCRIPTS_DIR.resolve() not in script_path.parents or not script_path.exists():
+        return jsonify({"success": False, "error": "Invalid script"}), 400
+
+    job_id = uuid.uuid4().hex
+    with jobs_lock:
+        jobs[job_id] = {"status": "queued"}
+    job_queue.put((job_id, script_path, scene_name))
+
+    return jsonify({"success": True, "job_id": job_id, "status": "queued"}), 202
+
+
+@app.get("/api/jobs/<job_id>")
+def api_job_status(job_id):
+    with jobs_lock:
+        job = jobs.get(job_id)
+    if job is None:
+        return jsonify({"error": "Unknown job_id"}), 404
+    return jsonify(job)
 
 
 @app.get("/videos/<path:filename>")
@@ -240,4 +303,6 @@ def api_save_yaml():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000, use_reloader=False)
+    # Local dev only — production (Docker/Render) runs via gunicorn instead,
+    # which never executes this block (it imports `app:app` directly).
+    app.run(debug=True, port=int(os.environ.get("PORT", 5000)), use_reloader=False)

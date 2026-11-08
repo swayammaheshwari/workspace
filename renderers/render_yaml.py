@@ -1,7 +1,7 @@
 """Turn a videos_script/*.yml file into a rendered video.
 
 Usage:
-    .venv/Scripts/python.exe render_yaml.py videos_script/golden_ratio_spiral.yml [-q ql|qm|qh]
+    .venv/Scripts/python.exe renderers/render_yaml.py videos_script/golden_ratio_spiral.yml [-q ql|qm|qh]
 """
 import argparse
 import os
@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-ROOT = Path(__file__).parent.resolve()
+ROOT = Path(__file__).parent.parent.resolve()  # project root (this file lives in renderers/)
 load_dotenv(ROOT / ".env")
 
 # manim-voiceover's ElevenLabsService reads ELEVEN_API_KEY; we store it as

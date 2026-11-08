@@ -1,0 +1,19 @@
+# Windows-native virtualenv — never copy into the Linux image; Python deps
+# are installed fresh inside the container via requirements.txt instead.
+.venv/
+
+# Intermediate build artifacts for both engines — regenerated at render time.
+.cache/
+hyperframes/demo/renders/
+hyperframes/demo/.hyperframes/
+hyperframes/demo/assets/narration/
+hyperframes/demo/index.html
+
+# Secrets — never bake into an image layer. Set ELEVENLABS_API_KEY as a
+# platform environment variable instead.
+.env
+
+.git/
+__pycache__/
+*.pyc
+node_modules/
