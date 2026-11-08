@@ -4,11 +4,449 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome</title>
+  <title>Math Video Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --bg-grad-1: #0b0d14;
+      --bg-grad-2: #141a2e;
+      --card: #151824;
+      --card-border: #262c3d;
+      --card-border-hover: #3a4568;
+      --text: #eef0f6;
+      --text-dim: #9aa1b5;
+      --accent: #6d8bff;
+      --accent-2: #9f6dff;
+      --accent-gradient: linear-gradient(135deg, #6d8bff, #9f6dff);
+      --green: #4ade80;
+      --red: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, Segoe UI, sans-serif;
+      background: radial-gradient(ellipse at top, var(--bg-grad-2) 0%, var(--bg-grad-1) 55%);
+      background-attachment: fixed;
+      color: var(--text);
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      min-height: 100vh;
+    }
+
+    header {
+      margin-bottom: 36px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(109, 139, 255, 0.12);
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--text-dim);
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    button {
+      font-family: inherit;
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 4px 14px rgba(109, 139, 255, 0.25);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(109, 139, 255, 0.4);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: #242a3d;
+      box-shadow: none;
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: #2d3449;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    button:disabled {
+      background: #1e212c;
+      color: #666;
+      cursor: progress;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .script-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .script-card:hover {
+      border-color: var(--card-border-hover);
+    }
+
+    .script-card h3 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+      letter-spacing: 0.01em;
+    }
+
+    .scene-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+    }
+
+    .scene-row + .scene-row {
+      border-top: 1px solid var(--card-border);
+    }
+
+    .scene-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--text-dim);
+      min-width: 90px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status.done {
+      color: var(--green);
+    }
+
+    .status.failed {
+      color: var(--red);
+    }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error {
+      color: var(--red);
+      white-space: pre-wrap;
+      font-size: 12px;
+      margin-top: 8px;
+      font-family: ui-monospace, monospace;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    #empty {
+      color: var(--text-dim);
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 6, 10, 0.85);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.15s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content video {
+      display: block;
+      max-width: 80vw;
+      max-height: 75vh;
+      border-radius: 10px;
+    }
+
+    .modal-close {
+      display: block;
+      margin-left: auto;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Workspace Dashboard</h1>
+  <header>
+    <div class="eyebrow">⚡ Manim Studio</div>
+    <h1>Math Video Studio</h1>
+    <p>Render, preview, and download polished math animations — straight from your scripts.</p>
+  </header>
+
+  <div class="toolbar">
+    <button id="importBtn">+ Import Script</button>
+    <input type="file" id="importInput" accept=".py" style="display:none;">
+    <span id="importStatus" class="status"></span>
+  </div>
+
+  <div id="scripts"></div>
+  <p id="empty" style="display:none;">No scripts found in <code>videos_script/</code>.</p>
+
+  <div id="videoModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close secondary" id="modalCloseBtn">Close ✕</button>
+      <video id="modalVideo" controls></video>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById("videoModal");
+    const modalVideo = document.getElementById("modalVideo");
+
+    function openModal(videoUrl) {
+      modalVideo.src = videoUrl + "?t=" + Date.now();
+      modal.classList.add("open");
+      modalVideo.play();
+    }
+
+    function closeModal() {
+      modal.classList.remove("open");
+      modalVideo.pause();
+      modalVideo.src = "";
+    }
+
+    document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    function triggerDownload(videoUrl, sceneName) {
+      const downloadUrl = videoUrl.replace(/^\/videos\//, "/download/");
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = sceneName + ".mp4";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function setStatus(status, state, text) {
+      status.className = "status" + (state ? " " + state : "");
+      status.innerHTML = state === "rendering" ? `<span class="spinner"></span>${text}` : text;
+    }
+
+    async function renderThen(scriptFile, sceneName, buttons, status, errorBox, onSuccess) {
+      buttons.forEach((b) => (b.disabled = true));
+      setStatus(status, "rendering", "Rendering...");
+      errorBox.textContent = "";
+
+      try {
+        const res = await fetch("/api/render", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ script: scriptFile, scene: sceneName }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          setStatus(status, "done", "Done");
+          onSuccess(data.video_url);
+        } else {
+          setStatus(status, "failed", "Failed");
+          errorBox.textContent = data.error || "Unknown error";
+        }
+      } catch (e) {
+        setStatus(status, "failed", "Failed");
+        errorBox.textContent = String(e);
+      } finally {
+        buttons.forEach((b) => (b.disabled = false));
+      }
+    }
+
+    async function loadScripts() {
+      const res = await fetch("/api/scripts");
+      const scripts = await res.json();
+      const container = document.getElementById("scripts");
+      const empty = document.getElementById("empty");
+      container.innerHTML = "";
+
+      if (scripts.length === 0) {
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+
+      for (const script of scripts) {
+        const card = document.createElement("div");
+        card.className = "script-card";
+
+        const title = document.createElement("h3");
+        title.textContent = script.file;
+        card.appendChild(title);
+
+        for (const scene of script.scenes) {
+          const row = document.createElement("div");
+          row.className = "scene-row";
+
+          const name = document.createElement("span");
+          name.className = "scene-name";
+          name.textContent = scene;
+
+          const playBtn = document.createElement("button");
+          playBtn.textContent = "▶ Play";
+
+          const downloadBtn = document.createElement("button");
+          downloadBtn.className = "secondary";
+          downloadBtn.textContent = "⬇ Download";
+
+          const status = document.createElement("span");
+          status.className = "status";
+
+          row.appendChild(name);
+          row.appendChild(playBtn);
+          row.appendChild(downloadBtn);
+          row.appendChild(status);
+          card.appendChild(row);
+
+          const errorBox = document.createElement("div");
+          errorBox.className = "error";
+          card.appendChild(errorBox);
+
+          const buttons = [playBtn, downloadBtn];
+
+          playBtn.addEventListener("click", () =>
+            renderThen(script.file, scene, buttons, status, errorBox, (url) => openModal(url))
+          );
+
+          downloadBtn.addEventListener("click", () =>
+            renderThen(script.file, scene, buttons, status, errorBox, (url) => triggerDownload(url, scene))
+          );
+        }
+
+        container.appendChild(card);
+      }
+    }
+
+    const importBtn = document.getElementById("importBtn");
+    const importInput = document.getElementById("importInput");
+    const importStatus = document.getElementById("importStatus");
+
+    importBtn.addEventListener("click", () => importInput.click());
+
+    importInput.addEventListener("change", async () => {
+      const file = importInput.files[0];
+      if (!file) return;
+
+      if (!file.name.endsWith(".py")) {
+        setStatus(importStatus, "failed", "Only .py files are allowed");
+        importInput.value = "";
+        return;
+      }
+
+      setStatus(importStatus, "rendering", "Uploading...");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+          setStatus(importStatus, "done", `Imported ${data.filename}`);
+          await loadScripts();
+        } else {
+          setStatus(importStatus, "failed", data.error || "Upload failed");
+        }
+      } catch (e) {
+        setStatus(importStatus, "failed", String(e));
+      } finally {
+        importInput.value = "";
+      }
+    });
+
+    loadScripts();
+  </script>
 </body>
 
 </html>
